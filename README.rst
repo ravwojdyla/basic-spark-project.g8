@@ -31,8 +31,18 @@ You can read README.rst of the sample project from `this link <https://github.co
 CHANGELOG
 =========
 
+0.1.2 (Add sample applications)
+---------------------------------
+Add the following sample applications little changed from Spark official samples.
+The difference is not the algorithm but the mechanism to handle classes and parameters.
+
+* WordCount, RandomTextWriter (the test data generator for WordCount) and Words (dictionary file)
+* GroupByTest
+* SparkLR
+* SparkHdfsLR and SparkLRTestDataGenerator, the test data generator for SparkHdfsLR.
+
 0.1.1 (Change CDH5b2 to CDH5 GA.)
-------------------------
+---------------------------------
 * Scalatest 2.0 for testing
 * Sbt 0.12.4
 * Scala 2.10.3
