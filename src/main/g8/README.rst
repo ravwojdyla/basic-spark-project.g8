@@ -289,12 +289,44 @@ You can get help messages by executing with no argument.::
 
  $ SPARK_YARN_APP_JAR=~/Sources/basic-spark/target/scala-2.10/basic-spark.jar SPARK_CLASSPATH=$CLASSPATH:$SPARK_YARN_APP_JAR ./bin/spark-class com.example.GroupByTest
 
+It is possible to use spark-shell as well as yarn-client mode.
+When you run application in spark-shell, you first should import classes.
+
+eg::
+
+ $ MASTER=yarn-client SPARK_YARN_APP_JAR=~/Sources/basic-spark/target/scala-2.10/basic-spark.jar SPARK_CLASSPATH=$CLASSPATH:$SPARK_YARN_APP_JAR ./bin/spark-shell
+ scala> import com.example._
+
+Next, you should create an instance of GroupByTest class.
+
+eg::
+
+ scala> val groupByTest = new GroupByTest(sc, 2, 2, 2 ,2)
+ 
+Please see source code for the detail information about arguments.
+
 SparkLR
 -------
 This is a sample to measure performance about iterative computing.
 You can get help messages by executing with no argument.::
 
  $ SPARK_YARN_APP_JAR=~/Sources/basic-spark/target/scala-2.10/basic-spark.jar SPARK_CLASSPATH=$CLASSPATH:$SPARK_YARN_APP_JAR ./bin/spark-class com.example.SparkLR
+
+It is possible to use spark-shell as well as yarn-client mode.
+When you run application in spark-shell, you first should import classes.
+
+eg::
+
+ $ MASTER=yarn-client SPARK_YARN_APP_JAR=~/Sources/basic-spark/target/scala-2.10/basic-spark.jar SPARK_CLASSPATH=$CLASSPATH:$SPARK_YARN_APP_JAR ./bin/spark-shell
+ scala> import com.example._
+
+Next, you should create an instance of GroupByTest class.
+
+eg::
+
+ scala> val sparkLR = new SparkLR(sc, 2, 2, 2, 2)
+
+Please see source code for the detail information about arguments.
 
 SparkHdfsLR
 ------------
@@ -315,5 +347,23 @@ eg::
 You can get help messages by executing with no argument.::
 
  $ SPARK_YARN_APP_JAR=~/Sources/basic-spark/target/scala-2.10/basic-spark.jar SPARK_CLASSPATH=$CLASSPATH:$SPARK_YARN_APP_JAR ./bin/spark-class com.example.SparkLRTestDataGenerator 
+
+It is possible to use spark-shell as well as yarn-client mode.
+When you run application in spark-shell, you first should import classes.
+
+eg::
+
+ $ MASTER=yarn-client SPARK_YARN_APP_JAR=~/Sources/basic-spark/target/scala-2.10/basic-spark.jar SPARK_CLASSPATH=$CLASSPATH:$SPARK_YARN_APP_JAR ./bin/spark-shell
+ scala> import com.example._
+
+Next, you should create an instance of GroupByTest class.
+
+eg::
+
+ scala> val sparkHdfsLR = new SparkHdfsLR(sc, "hdfs://hdfs-namenode:8020/user/vagrant/lr_sampledata", 10. 10)
+ scala> sparkHdfsLR.w
+ res1: org.apache.spark.util.Vector = (5.117742259650424, 1.7021266161784327, 10.715021270892846, 7.721745776357943, 5.642877018294815, 5.7831032944263, 9.347958924207019, 13.396906063506469, 6.452169114742098, 4.29435059772309)
+
+Please see source code for the detail information about arguments.
 
 .. vim: ft=rst tw=0
