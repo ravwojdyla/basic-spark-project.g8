@@ -279,4 +279,41 @@ Example of the result::
  (Prosobranchiata,1707)
  (cresylite,1789)
 
+Other sample applications
+==========================
+
+GroupByTest
+-----------
+This is a sample to measure performace about shuffling data among workers.
+You can get help messages by executing with no argument.::
+
+ $ SPARK_YARN_APP_JAR=~/Sources/basic-spark/target/scala-2.10/basic-spark.jar SPARK_CLASSPATH=$CLASSPATH:$SPARK_YARN_APP_JAR ./bin/spark-class com.example.GroupByTest
+
+SparkLR
+-------
+This is a sample to measure performance about iterative computing.
+You can get help messages by executing with no argument.::
+
+ $ SPARK_YARN_APP_JAR=~/Sources/basic-spark/target/scala-2.10/basic-spark.jar SPARK_CLASSPATH=$CLASSPATH:$SPARK_YARN_APP_JAR ./bin/spark-class com.example.SparkLR
+
+SparkHdfsLR
+------------
+This is a sample to measure performance about iterative computing.
+The difference from SparkLR is usage of HDFS.
+SparkHdfsLR reads data on HDFS as input.
+
+You can get help messages by executing with no argument.::
+
+ $ SPARK_YARN_APP_JAR=~/Sources/basic-spark/target/scala-2.10/basic-spark.jar SPARK_CLASSPATH=$CLASSPATH:$SPARK_YARN_APP_JAR ./bin/spark-class com.example.SparkHdfsLR
+
+SparkLRTestDataGenerator generates test data for SparkHdfsLR.
+
+eg::
+
+ $ SPARK_YARN_APP_JAR=~/Sources/basic-spark/target/scala-2.10/basic-spark.jar SPARK_CLASSPATH=$CLASSPATH:$SPARK_YARN_APP_JAR ./bin/spark-class com.example.SparkLRTestDataGenerator yarn-client hdfs://hdfs-namenode:8020/user/<your user name>/lr_sampledata
+
+You can get help messages by executing with no argument.::
+
+ $ SPARK_YARN_APP_JAR=~/Sources/basic-spark/target/scala-2.10/basic-spark.jar SPARK_CLASSPATH=$CLASSPATH:$SPARK_YARN_APP_JAR ./bin/spark-class com.example.SparkLRTestDataGenerator 
+
 .. vim: ft=rst tw=0
