@@ -82,7 +82,16 @@ class SparkLRTestDataGenerator(sc: SparkContext, output: String, parallel: Int =
       val x = Vector(D, _ => rand.nextGaussian + y * R)
       DataPoint(x, y)
     }
-    Array.tabulate(N)(generatePoint)
+
+    val iter = new Iterator[DataPoint] {
+      private var i = 0
+      def hasNext = i < N
+      def next = {
+        if (i < N) { val dp = generatePoint(i); i += 1;  dp} else error("next on empty iterator")
+      }
+    }
+
+    iter
   }
 
   val points = sc.parallelize(1 to parallel, parallel).flatMap { p =>
