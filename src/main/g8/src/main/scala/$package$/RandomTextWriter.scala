@@ -15,7 +15,7 @@ case class RandomTextWriterConfig(master: String = "",
                                   minValue: Int = 10, maxValue: Int = 100,
                                   mapNum: Int = 1,
                                   userName: String = "spark",
-                                  megaBytesPerMap: Int = 1)
+                                  megaBytesPerMap: Long = 1)
 
 object RandomTextWriter {
 
@@ -38,7 +38,7 @@ object RandomTextWriter {
         (x, c) => c.copy(maxValue = x)
       }
 
-      opt[Int]('b', "megaBytesPerMap [MB]") valueName("megaBytesPerMap") action {
+      opt[Long]('b', "megaBytesPerMap [MB]") valueName("megaBytesPerMap") action {
         (x, c) => c.copy(megaBytesPerMap = x)
       }
 
@@ -92,30 +92,34 @@ object RandomTextWriter {
 
 @SerialVersionUID(1L)
 class RandomTextWriter(sc: SparkContext, minKey: Int, wordsInKeyRange: Int,
-          minValue: Int, wordsInValueRange: Int, mapNum: Int, megaBytesPerMap: Int, output: String) 
+          minValue: Int, wordsInValueRange: Int, mapNum: Int, megaBytesPerMap: Long, output: String) 
           extends Serializable {
 
   val totalSize = sc.accumulator(0: Long)
 
   sc.parallelize(1 to mapNum, mapNum).flatMap { id =>
-    val keyValues = ArrayBuffer.empty[(String, String)]
-    var bytes: Long = megaBytesPerMap * 1024 * 1024
+    val iter = new Iterator[(String, String)] {
+      private var bytes: Long = megaBytesPerMap * 1024 * 1024
+      def hasNext = bytes > 0
+      def next = {
+        if (bytes > 0) {
+          val noWordsKey = if (wordsInKeyRange != 0) (minKey + random * wordsInKeyRange).toInt else 0
+          val noWordsValue = if (wordsInValueRange != 0) (minValue + random * wordsInValueRange).toInt else 0
 
-    while (bytes > 0) {
-      val noWordsKey = if (wordsInKeyRange != 0) (minKey + random * wordsInKeyRange).toInt else 0
-      val noWordsValue = if (wordsInValueRange != 0) (minValue + random * wordsInValueRange).toInt else 0
+          val keyWords = generateSentence(noWordsKey)
+          val valueWords = generateSentence(noWordsValue)
 
-      val keyWords = generateSentence(noWordsKey)
-      val valueWords = generateSentence(noWordsValue)
+          bytes -= keyWords.getBytes("utf8").length + valueWords.getBytes("utf8").length
+          totalSize += keyWords.getBytes("utf8").length + valueWords.getBytes("utf8").length
 
-      keyValues += ((keyWords, valueWords))
-
-      val size = keyWords.getLength + valueWords.getLength
-      bytes -= size
-      totalSize += size
+          (keyWords, valueWords)
+        } else {
+          error("next on empty iterator")
+        }
+      }
     }
-    keyValues
 
+    iter
   }.map { t =>
     t._1 + "\t" + t._2
   }.saveAsTextFile(output)
