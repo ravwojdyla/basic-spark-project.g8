@@ -1,20 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package $package$
 
 import org.apache.spark.SparkContext
@@ -24,21 +7,16 @@ object SparkPi {
 
   def main(args: Array[String]): Unit = {
     if (args.length == 0) {
-      System.err.println("Usage: SparkPi <master> [<slices>] [<num_of_samples>]")
-      System.err.println("")
-      System.err.println("  num_of_samples: The total number of seeds to calcurate pi")
-      System.err.println("  slices: The concurrency")
-      System.err.println("  slices: The total number of samples")
+      System.err.println("Usage: SparkPi <master> [<slices>]")
       System.exit(1)
     }
 
     val sc = new SparkContext(args(0), "SparkPi",
       System.getenv("SPARK_HOME"), SparkContext.jarOfClass(this.getClass))
 
-    val slices = if (args.length > 1) args(1).toInt else 1
-    val num_samples = if (args.length > 2) args(2).toInt else 10000
+    val slices = if (args.length > 1) args(1).toInt else 2
 
-    val sp = new SparkPi(sc, slices, num_samples)
+    val sp = new SparkPi(sc, slices)
     val pi = sp.exec()
     println("pi: " + pi)
 
@@ -46,9 +24,10 @@ object SparkPi {
   }
 }
 
-class SparkPi(sc: SparkContext, slices: Int = 1, num_samples: Int = 10000) {
+class SparkPi(sc: SparkContext, slices: Int) {
 
-  val n = num_samples / slices
+  val NUM_SAMPLES = 10000
+  val n = NUM_SAMPLES / slices
 
   def exec(): Double = {
     val count = sc.parallelize(1 to n, slices).map{i =>
