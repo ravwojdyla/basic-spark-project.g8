@@ -3,6 +3,10 @@ package $package$
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
+import org.apache.spark.deploy.SparkHadoopUtil
+import org.apache.spark.scheduler.InputFormatInfo
+
+import org.apache.hadoop.io.Text
 
 import scopt.OptionParser
 import scala.math.random
@@ -12,7 +16,8 @@ case class WordCountConfig(master: String = "",
                            input: String = "",
                            output: String = "",
                            userName: String = "spark",
-                           minSplits: Int = 1)
+                           minSplits: Int = 1,
+                           inputFormat: String = "textFile")
 
 object WordCount {
 
@@ -39,23 +44,28 @@ object WordCount {
         (x, c) => c.copy(minSplits = x)
       }
 
+      opt[String]('i', "inputFormat") valueName("inputFormat") action {
+        (x, c) => c.copy(inputFormat = x)
+      }
+
     }
 
     parser.parse(args, WordCountConfig()) map { config =>
-      val sparkConf = new SparkConf()
-                            .setMaster(config.master)
-                            .setAppName("WordCount")
-                            .setJars(SparkContext.jarOfClass(this.getClass))
-                            .setSparkHome(System.getenv("SPARK_HOME"))
 
-      System.setProperty("user.name", config.userName)
+      val inputFormatClass = if (config.inputFormat == "textFile")
+                               classOf[org.apache.hadoop.mapred.TextInputFormat]
+                             else
+                               classOf[org.apache.hadoop.mapred.SequenceFileInputFormat[Text,Text]]
 
-      val sc = new SparkContext(sparkConf)
+      val hadoopConf = SparkHadoopUtil.get.newConfiguration()
+
+      val sc = new SparkContext(config.master, "WordCount", System.getenv("SPARK_HOME"),
+                     SparkContext.jarOfClass(this.getClass()),
+                     Map(),
+                     InputFormatInfo.computePreferredLocations(
+                       Seq(new InputFormatInfo(hadoopConf, inputFormatClass, config.input))))
 
       val wordCount = new WordCount(sc, config.input, config.output, config.minSplits)
-      val numWords = wordCount.getNumWords()
-
-      println("The number of kinds of words: " + numWords)
 
       sc.stop()
       System.exit(0)
@@ -79,6 +89,7 @@ class WordCount(sc: SparkContext, input: String,  output: String, minSplits: Int
                     .map(word => (word, 1))
                     .reduceByKey(_ + _)
                     .cache()
+
   counts.saveAsTextFile(output)
 
   def getNumWords() = {
