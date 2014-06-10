@@ -30,23 +30,22 @@ import org.apache.spark.scheduler.InputFormatInfo
 object SparkHdfsLR {
 
   def main(args: Array[String]) {
-    if (args.length < 4) {
-    System.err.println("Usage: SparkHdfsLR <master> <file> <iters> <dimensions>")
+    if (args.length < 3) {
+      System.err.println("Usage: SparkHdfsLR <file> <iters> <dimensions>")
       System.exit(1)
     }
-    val inputPath = args(1)
-    val conf = SparkHadoopUtil.get.newConfiguration()
-    val sc = new SparkContext(args(0), "SparkHdfsLR",
-      System.getenv("SPARK_HOME"), SparkContext.jarOfClass(this.getClass), Map(), 
-      InputFormatInfo.computePreferredLocations(
-          Seq(new InputFormatInfo(conf, classOf[org.apache.hadoop.mapred.TextInputFormat], inputPath))))
-    val num_iter = args(2).toInt
-    val dimensions = args(3).toInt
+
+    val inputPath = args(0)
+    val num_iter = args(1).toInt
+    val dimensions = args(2).toInt
+
+    val sparkConf = new SparkConf().setAppName("SparkHdfsLR")
+    val sc = new SparkContext(sparkConf)
 
     val sparkHdfsLR = new SparkHdfsLR(sc, inputPath, num_iter, dimensions)
 
     println("Final w: " + sparkHdfsLR.w)
-    System.exit(0)
+    sc.stop()
   }
 }
 

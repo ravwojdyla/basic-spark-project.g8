@@ -18,30 +18,19 @@ package $package$
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
 import java.util.Random
 
 object GroupByTest {
+  // Usage: GroupByTest [numMappers] [numKVPairs] [valSize] [numReducers]
   def main(args: Array[String]) {
-    if (args.length == 0) {
-      System.err.println("Usage: GroupByTest <master> [numMappers] [numKVPairs] [valSize] [numReducers]")
-      System.err.println("")
-      System.err.println("    numMappers: The number of map tasks")
-      System.err.println("    numKVPairs: The number of KeyValue pairs in which generated in map tasks")
-      System.err.println("    valSize: The size of value of KeyValue pairs in which generated in map tasks")
-      System.err.println("    numReducers: The number of reducers")
-      System.err.println("")
-      System.err.println("    The total size of input data for grouping is at most:")    
-      System.err.println("      numMappers * numKVPairs * (IntMax + valSize)")
-      System.exit(1)
-    }
-    
-    var numMappers = if (args.length > 1) args(1).toInt else 2
-    var numKVPairs = if (args.length > 2) args(2).toInt else 1000
-    var valSize = if (args.length > 3) args(3).toInt else 1000
-    var numReducers = if (args.length > 4) args(4).toInt else numMappers
+    var numMappers = if (args.length > 0) args(0).toInt else 2
+    var numKVPairs = if (args.length > 1) args(1).toInt else 1000
+    var valSize = if (args.length > 2) args(2).toInt else 1000
+    var numReducers = if (args.length > 3) args(3).toInt else numMappers
 
-    val sc = new SparkContext(args(0), "GroupBy Test",
-      System.getenv("SPARK_HOME"), SparkContext.jarOfClass(this.getClass))
+    val sparkConf = new SparkConf().setAppName("GroupByTest")
+    val sc = new SparkContext(sparkConf)
     
     val groupByTest = new GroupByTest(sc, numMappers, numKVPairs, valSize, numReducers)
 
