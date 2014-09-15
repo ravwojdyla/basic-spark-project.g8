@@ -17,26 +17,18 @@
 
 package $package$
 
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
+import org.apache.spark._
 
 object SparkPi {
 
+  // Usage: SparkPi [<slices>] [<num_of_samples>]
   def main(args: Array[String]): Unit = {
-    if (args.length == 0) {
-      System.err.println("Usage: SparkPi <master> [<slices>] [<num_of_samples>]")
-      System.err.println("")
-      System.err.println("  num_of_samples: The total number of seeds to calcurate pi")
-      System.err.println("  slices: The concurrency")
-      System.err.println("  slices: The total number of samples")
-      System.exit(1)
-    }
+    val sparkConf = new SparkConf()
+    //val sc = new SparkContext(sparkConf)
+    val sc = new SparkContext()
 
-    val sc = new SparkContext(args(0), "SparkPi",
-      System.getenv("SPARK_HOME"), SparkContext.jarOfClass(this.getClass))
-
-    val slices = if (args.length > 1) args(1).toInt else 1
-    val num_samples = if (args.length > 2) args(2).toInt else 10000
+    val slices = if (args.length > 0) args(0).toInt else 1
+    val num_samples = if (args.length > 1) args(1).toInt else 10000
 
     val sp = new SparkPi(sc, slices, num_samples)
     val pi = sp.exec()

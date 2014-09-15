@@ -33,8 +33,8 @@ import org.apache.hadoop.io.NullWritable
 object SparkLRTestDataGenerator {
 
   def main(args: Array[String]) {
-    if (args.length < 2) {
-      System.err.println("Usage: SparkLRTestDataGenerator <master> <output> [<output_mode>] [<parallel>], [<num_datapoint>] [<dimensions>]")
+    if (args.length < 1) {
+      System.err.println("Usage: SparkLRTestDataGenerator <output> [<output_mode>] [<parallel>], [<num_datapoint>] [<dimensions>]")
 	    System.err.println("")
 	    System.err.println("  output_mode: The output format. textfile, sequencefile, objectfile (default: textfile)")
 	    System.err.println("  parallel: The number of parallel degree (default: 2)")
@@ -43,14 +43,14 @@ object SparkLRTestDataGenerator {
       System.exit(1)
     }
 
-    val output = args(1)
-    val outputMode = if (args.length > 2) args(2) else "textfile"
-    val parallel = if (args.length > 3) args(3).toInt else 2
-    val numDatapoint = if (args.length > 4) args(4).toInt else 10
-    val dimensions = if (args.length > 5) args(5).toInt else 10
+    val output = args(0)
+    val outputMode = if (args.length > 1) args(1) else "textfile"
+    val parallel = if (args.length > 2) args(2).toInt else 2
+    val numDatapoint = if (args.length > 3) args(3).toInt else 10
+    val dimensions = if (args.length > 4) args(4).toInt else 10
 
-    val sc = new SparkContext(args(0), "SparkLRTestDataGenerator",
-      System.getenv("SPARK_HOME"), SparkContext.jarOfClass(this.getClass))
+    val sparkConf = new SparkConf()
+    val sc = new SparkContext(sparkConf)
 
     val sparkLRTestDataGenarator = new SparkLRTestDataGenerator(sc, output,  parallel, numDatapoint, dimensions)
 
@@ -62,7 +62,7 @@ object SparkLRTestDataGenerator {
       println("The wrong format: " + outputMode)
     }
 
-    System.exit(0)
+    sc.stop()
   }
 }
 
@@ -82,7 +82,7 @@ class SparkLRTestDataGenerator(sc: SparkContext, output: String, parallel: Int =
       val x = Vector(D, _ => rand.nextGaussian + y * R)
       DataPoint(x, y)
     }
-
+    //Array.tabulate(N)(generatePoint)
     val iter = new Iterator[DataPoint] {
       private var i = 0
       def hasNext = i < N

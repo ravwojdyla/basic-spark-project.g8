@@ -4,11 +4,12 @@ import org.scalatest.FunSpec
 import org.scalatest.BeforeAndAfter
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
 
 class SparkPiSpec extends FunSpec with BeforeAndAfter{
 
-  val sc = new SparkContext("local", "SparkPi",
-             System.getenv("SPARK_HOME"), SparkContext.jarOfClass(this.getClass))
+  val sparkConf = new SparkConf().setMaster("local").setAppName("SparkPi")
+  val sc = new SparkContext(sparkConf)
 
   describe("Pi") {
     it("should be less than 4 and more than 3"){

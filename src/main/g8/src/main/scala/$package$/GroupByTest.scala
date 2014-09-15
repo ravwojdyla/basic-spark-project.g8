@@ -18,53 +18,64 @@ package $package$
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
+import org.apache.spark.storage.StorageLevel
 import java.util.Random
+import java.lang.Thread
 
 object GroupByTest {
+  // Usage: GroupByTest [numMappers] [numKVPairs] [valSize] [numReducers]
   def main(args: Array[String]) {
-    if (args.length == 0) {
-      System.err.println("Usage: GroupByTest <master> [numMappers] [numKVPairs] [valSize] [numReducers]")
-      System.err.println("")
-      System.err.println("    numMappers: The number of map tasks")
-      System.err.println("    numKVPairs: The number of KeyValue pairs in which generated in map tasks")
-      System.err.println("    valSize: The size of value of KeyValue pairs in which generated in map tasks")
-      System.err.println("    numReducers: The number of reducers")
-      System.err.println("")
-      System.err.println("    The total size of input data for grouping is at most:")    
-      System.err.println("      numMappers * numKVPairs * (IntMax + valSize)")
-      System.exit(1)
-    }
-    
-    var numMappers = if (args.length > 1) args(1).toInt else 2
-    var numKVPairs = if (args.length > 2) args(2).toInt else 1000
-    var valSize = if (args.length > 3) args(3).toInt else 1000
-    var numReducers = if (args.length > 4) args(4).toInt else numMappers
+    var numMappers = if (args.length > 0) args(0).toInt else 2
+    var numKVPairs = if (args.length > 1) args(1).toInt else 1000
+    var valSize = if (args.length > 2) args(2).toInt else 1000
+    var numReducers = if (args.length > 3) args(3).toInt else numMappers
+    var storageLevel = StorageLevel.MEMORY_ONLY
+    var sleeptime = if (args.length > 5) args(5).toInt else 0
 
-    val sc = new SparkContext(args(0), "GroupBy Test",
-      System.getenv("SPARK_HOME"), SparkContext.jarOfClass(this.getClass))
-    
-    val groupByTest = new GroupByTest(sc, numMappers, numKVPairs, valSize, numReducers)
+    if (args.length > 4) {
+      if (args(4) == "MEMORY_ONLY") storageLevel = StorageLevel.MEMORY_ONLY
+      if (args(4) == "MEMORY_AND_DISK") storageLevel = StorageLevel.MEMORY_AND_DISK
+      if (args(4) == "DISK_ONLY") storageLevel = StorageLevel.DISK_ONLY
+    }
+
+    val sparkConf = new SparkConf()
+    val sc = new SparkContext(sparkConf)
+
+    Thread.sleep(sleeptime)
+
+    val groupByTest = new GroupByTest(sc, numMappers, numKVPairs, valSize, numReducers, storageLevel)
 
     println("total count: " + groupByTest.count)
 
-
-    System.exit(0)
+    sc.stop()
   }
 }
 
 @serializable
 @SerialVersionUID(1L)
-class GroupByTest (sc: SparkContext, numMappers: Int, numKVPairs: Int, valSize: Int, numReducers: Int) {
-    val pairs1 = sc.parallelize(0 until numMappers, numMappers).flatMap { p =>
+class GroupByTest (sc: SparkContext, numMappers: Int, numKVPairs: Int, valSize: Int, numReducers: Int, storageLevel: StorageLevel) {
+
+    def generateData = {
       val ranGen = new Random
-      var arr1 = new Array[(Int, Array[Byte])](numKVPairs)
-      for (i <- 0 until numKVPairs) {
-        val byteArr = new Array[Byte](valSize)
-        ranGen.nextBytes(byteArr)
-        arr1(i) = (ranGen.nextInt(Int.MaxValue), byteArr)
+      val iter = new Iterator[Pair[Int,Array[Byte]]] {
+        private var i = 0
+        def hasNext = i < numKVPairs
+        def next = {
+          if (i < numKVPairs) {
+            i += 1
+            val byteArr = new Array[Byte](valSize)
+            ranGen.nextBytes(byteArr)
+            Pair(ranGen.nextInt(Int.MaxValue), byteArr)
+          } else error("next on empty iterator")
+        }
       }
-      arr1
-    }.cache
+      iter
+    }
+
+    val pairs1 = sc.parallelize(0 until numMappers, numMappers).flatMap { p =>
+    generateData
+  }.persist(storageLevel)
 
     // Enforce that everything has been calculated and in cache
     pairs1.count

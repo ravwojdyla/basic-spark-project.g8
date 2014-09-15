@@ -27,29 +27,21 @@ import org.apache.spark._
  */
 object SparkLR {
 
+  // Usage: SparkLR [<slices>], [<iter>] [<num_datapoint>] [<dimensions>]
   def main(args: Array[String]) {
-    if (args.length == 0) {
-	    System.err.println("Usage: SparkLR <master> [<slices>], [<iter>] [<num_datapoint>] [<dimensions>]")
-	    System.err.println("")
-	    System.err.println("  slices: The number of split")
-	    System.err.println("  iter: The number of iterrating")
-	    System.err.println("  num_datapoint: The number of data point")
-	    System.err.println("  dimensions: The size of vectors")
-      System.exit(1)
-    }
 
-    val numSlices = if (args.length > 1) args(1).toInt else 2
-    val numIter = if (args.length > 2) args(2).toInt else 5
-    val numDatapoint = if (args.length > 3) args(3).toInt else 10
-    val dimensions = if (args.length > 4) args(4).toInt else 10
+    val numSlices = if (args.length > 0) args(0).toInt else 2
+    val numIter = if (args.length > 1) args(1).toInt else 5
+    val numDatapoint = if (args.length > 2) args(2).toInt else 10
+    val dimensions = if (args.length > 3) args(3).toInt else 10
 
-    val sc = new SparkContext(args(0), "SparkLR",
-      System.getenv("SPARK_HOME"), SparkContext.jarOfClass(this.getClass))
+    val sparkConf = new SparkConf()
+    val sc = new SparkContext(sparkConf)
 
     val sparkLR = new SparkLR(sc, numSlices, numIter, numDatapoint, dimensions)
 
     println("Final w: " + sparkLR.w)
-    System.exit(0)
+    sc.stop()
   }
 }
 

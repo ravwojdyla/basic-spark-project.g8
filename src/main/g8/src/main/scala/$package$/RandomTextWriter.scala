@@ -1,5 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
 package $package$
-
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -9,8 +24,7 @@ import scopt.OptionParser
 import scala.math.random
 import scala.collection.mutable._
 
-case class RandomTextWriterConfig(master: String = "",
-                                  output: String = "",
+case class RandomTextWriterConfig(output: String = "",
                                   minKey: Int = 5, maxKey: Int = 10,
                                   minValue: Int = 10, maxValue: Int = 100,
                                   mapNum: Int = 1,
@@ -50,10 +64,6 @@ object RandomTextWriter {
         (x, c) => c.copy(userName = x)
       }
 
-      arg[String]("master") valueName("master") action {
-        (x, c) => c.copy(master = x)
-      }
-
       arg[String]("output") valueName("output") action {
         (x, c) => c.copy(output = x)
       }
@@ -64,22 +74,12 @@ object RandomTextWriter {
       val wordsInValueRange = config.maxValue - config.minValue
 
       val sparkConf = new SparkConf()
-                      .setMaster(config.master)
-                      .setAppName("RandomTextWriter")
-                      .setJars(SparkContext.jarOfClass(this.getClass))
-                      .setSparkHome(System.getenv("SPARK_HOME"))
-      //                .set("user.name", config.userName)
-
-      System.setProperty("user.name", config.userName)
-
-      //val sc = new SparkContext(config.master, "RandomTextWriter",
-      //  System.getenv("SPARK_HOME"), SparkContext.jarOfClass(this.getClass))
       val sc = new SparkContext(sparkConf)
 
-      val randomTextWriter2 = new RandomTextWriter(sc, config.minKey, wordsInKeyRange,
+      val randomTextWriter = new RandomTextWriter(sc, config.minKey, wordsInKeyRange,
         config.minValue, wordsInValueRange, config.mapNum, config.megaBytesPerMap, config.output)
 
-      println("Total size: " + randomTextWriter2.totalSize.value + " [byte]")
+      println("Total size: " + randomTextWriter.totalSize.value + " [byte]")
 
       sc.stop()
 

@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package $package$
 
 import org.apache.spark.SparkContext
@@ -12,26 +29,15 @@ import scopt.OptionParser
 import scala.math.random
 import scala.collection.mutable._
 
-case class WordCountConfig(master: String = "",
-                           input: String = "",
+case class WordCountConfig(input: String = "",
                            output: String = "",
-                           userName: String = "spark",
-                           minSplits: Int = 1,
-                           inputFormat: String = "textFile")
+                           minSplits: Int = 1)
 
 object WordCount {
 
   def main(args: Array[String]): Unit = {
 
     val parser = new OptionParser[WordCountConfig]("WordCount") {
-      opt[String]('u', "userName") valueName("userName") action {
-        (x, c) => c.copy(userName = x)
-      }
-
-      arg[String]("master") valueName("master") action {
-        (x, c) => c.copy(master = x)
-      }
-
       arg[String]("input") valueName("input") action {
         (x, c) => c.copy(input = x)
       }
@@ -44,31 +50,16 @@ object WordCount {
         (x, c) => c.copy(minSplits = x)
       }
 
-      opt[String]('i', "inputFormat") valueName("inputFormat") action {
-        (x, c) => c.copy(inputFormat = x)
-      }
-
     }
 
     parser.parse(args, WordCountConfig()) map { config =>
 
-      val inputFormatClass = if (config.inputFormat == "textFile")
-                               classOf[org.apache.hadoop.mapred.TextInputFormat]
-                             else
-                               classOf[org.apache.hadoop.mapred.SequenceFileInputFormat[Text,Text]]
-
-      val hadoopConf = SparkHadoopUtil.get.newConfiguration()
-
-      val sc = new SparkContext(config.master, "WordCount", System.getenv("SPARK_HOME"),
-                     SparkContext.jarOfClass(this.getClass()),
-                     Map(),
-                     InputFormatInfo.computePreferredLocations(
-                       Seq(new InputFormatInfo(hadoopConf, inputFormatClass, config.input))))
+      val sparkConf = new SparkConf()
+      val sc = new SparkContext(sparkConf)
 
       val wordCount = new WordCount(sc, config.input, config.output, config.minSplits)
 
       sc.stop()
-      System.exit(0)
     } getOrElse {
       System.exit(1)
     }
