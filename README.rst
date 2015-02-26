@@ -31,6 +31,11 @@ You can read README.rst of the sample project from `this link <https://github.co
 CHANGELOG
 =========
 
+0.1.3 (Change Spark version)
+-------------------------------------
+* Spark 1.1.0 -> Spark 1.2.1
+* CDH5.2.1 -> CDH5.3.1
+
 0.1.2 (Add sample applications)
 ---------------------------------
 Add the following sample applications little changed from Spark official samples.
