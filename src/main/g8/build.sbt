@@ -16,6 +16,7 @@ libraryDependencies ++= Seq(
 //  "org.apache.spark" %% "spark-sql" % "1.2.1" % "provided" withSources() withJavadoc(),
 //  "org.apache.spark" %% "spark-hive" % "1.2.1" % "provided" withSources() withJavadoc(),
 //  "org.apache.spark" %% "spark-mllib" % "1.2.1" % "provided" withSources() withJavadoc(),
+//  "org.apache.spark" %% "spark-graphx" % "1.2.1" % "provided" withSources() withJavadoc(),
   "org.apache.hadoop" % "hadoop-client" % "2.5.0-cdh5.3.1" % "provided" withJavadoc(),
   "com.github.scopt" %% "scopt" % "3.2.0"
 )
