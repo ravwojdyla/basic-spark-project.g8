@@ -4,7 +4,7 @@ It comes bundled with:
 * *main* and *test* source directories
 * `ScalaTest <http://www.scalatest.org/>`_
 * Scalacheck
-* SBT configuration for *0.13.0* , *Scala 2.10.3*, and *ScalaTest 2.0* dependencies
+* SBT configuration for *0.13.0* , *Scala 2.10.4*, and *ScalaTest 2.0* dependencies
 * project *name* , *package* and *version* customizable as variables
 
 How to use
@@ -30,6 +30,10 @@ You can read README.rst of the sample project from `this link <https://github.co
 
 CHANGELOG
 =========
+0.1.4 (Change versions of CDH, Spark and Scala)
+-------------------------------------
+* Spark 1.2.0 -> Spark 1.3.1
+* CDH5.2.1 -> CDH5.3.3
 
 0.1.3 (Change Spark version)
 -------------------------------------

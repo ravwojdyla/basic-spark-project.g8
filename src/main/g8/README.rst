@@ -15,7 +15,7 @@ Feature
 ========
 * Use ScalaTest
 * Include sbteclipse-plugin config in plugins.sbt
-* Use Hadoop 2.3 (CDH5)
+* Use Hadoop 2.5 (CDH5)
 * Sample souce code
 
   + SparkPi
